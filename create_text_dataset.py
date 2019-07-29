@@ -3,7 +3,7 @@ from sklearn.externals import joblib
 from constants import *
 from processing.proc_text import transform_text
 
-metadata = pd.read_csv(BASE_DIR + 'LJSpeech-1.1/metadata.csv', sep='|', dtype='object', quoting=3, header=None)
+metadata = pd.read_csv('data/LJSpeech/metadata.csv', sep='|', dtype='object', quoting=3, header=None)
 
 metadata = metadata.iloc[:500]
 

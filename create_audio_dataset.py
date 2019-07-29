@@ -9,7 +9,7 @@ import tensorflow as tf
 sess = tf.Session()
 
 print('Loading data ...')
-metadata = pd.read_csv(BASE_DIR + 'LJSpeech-1.1/metadata.csv', dtype='object', quoting=3, sep='|', header=None)
+metadata = pd.read_csv('data/LJSpeech/metadata.csv', dtype='object', quoting=3, sep='|', header=None)
 
 metadata = metadata.iloc[:500]
 
@@ -22,8 +22,8 @@ decoder_input = []
 
 print('Processing the audio samples (computation of spectrograms) ...')
 for file_name in tqdm(wav_filenames):
-  file_path = BASE_DIR + 'LJSpeech-1.1/wavs/' + file_name + '.wav'
-  fname, mel_spectro, spectro = get_padded_spectros(file_path, r, PREEMPHASIS, N_FFT, HOP_LENGTH, WIN_LENGTH, SAMPLING_RATE, N_MEL, REF_DB, MAX_DB)
+  file_path = 'data/LJSpeech/wavs/' + file_name + '.wav'
+  fname, mel_spectro, spectro = get_padded_spectros(file_path)
 
   decod_input_tensor = tf.concat((tf.zeros_like(mel_spectro[:-1, :]), mel_spectro[:-1, :]), 0)
 
@@ -48,7 +48,7 @@ for file_name in tqdm(wav_filenames):
 
   mel_spectro_data.append(padded_mel_spectro)
   spectro_data.append(padded_spectro)
-  decod_input.append(padded_decod_input)
+  decoder_input.append(padded_decod_input)
 
 print('Convert into np.array')
 mel_spectro_data_array = np.array(mel_spectro_data)
@@ -67,12 +67,12 @@ spectro_data_array_testing = spectro_data_array[len_train:]
 decoder_input_array_training = decoder_input_array[:len_train]
 decoder_input_array_testing = decoder_input_array[len_train:]
 
-print('Save data as plk')
-joblib.dump(mel_spectro_data_array_training, 'data/LJSpeech/mel_spectro_training.plk')
-joblib.dump(mel_spectro_data_array_testing, 'data/LJSpeech/mel_spectro_testing.plk')
+print('Save data as pkl')
+joblib.dump(mel_spectro_data_array_training, 'data/LJSpeech/mel_spectro_training.pkl')
+joblib.dump(mel_spectro_data_array_testing, 'data/LJSpeech/mel_spectro_testing.pkl')
 
-joblib.dump(spectro_data_array_training, 'data/LJSpeech/spectro_training.plk')
-joblib.dump(spectro_data_array_testing, 'data/LJSpeech/spectro_testing.plk')
+joblib.dump(spectro_data_array_training, 'data/LJSpeech/spectro_training.pkl')
+joblib.dump(spectro_data_array_testing, 'data/LJSpeech/spectro_testing.pkl')
 
-joblib.dump(decoder_input_array_training, 'data/LJSpeech/decoder_input_training.plk')
-joblib.dump(decoder_input_array_testing, 'data/LJSpeech/decoder_input_testing.plk')
+joblib.dump(decoder_input_array_training, 'data/LJSpeech/decoder_input_training.pkl')
+joblib.dump(decoder_input_array_testing, 'data/LJSpeech/decoder_input_testing.pkl')
