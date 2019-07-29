@@ -10,7 +10,7 @@ spectro_training = joblib.load('data/LJSpeech/spectro_training.pkl')
 decoder_input_training = joblib.load('data/LJSpeech/decoder_input_training.pkl')
 
 text_input_training = joblib.load('data/LJSpeech/text_input_training.pkl')
-vocab = joblib.load('data/LJSpeech/vocabulary.pkl')
+vocab = joblib.load('data/LJSpeech/vocabulary_id.pkl')
 
 model = Tacotron(N_MEL, r, K1, K2, NB_CHARS_MAX, EMBEDDING_SIZE, MAX_MEL_TIME_LENGTH, MAX_MAG_TIME_LENGTH, N_FFT, vocab)
 

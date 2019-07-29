@@ -19,6 +19,7 @@ def Pre_Net(input_data):
 
   return prenet
 
+
 def Conv1D_Bank(K_, input_data):
   """
   1-D Convolution Bank
@@ -36,6 +37,7 @@ def Conv1D_Bank(K_, input_data):
 
   return conv
 
+
 def Highway_Net(highway_input, nb_layers, activation = 'relu', bias = -3):
   """
   Highway Network
@@ -46,7 +48,7 @@ def Highway_Net(highway_input, nb_layers, activation = 'relu', bias = -3):
   for n in range(nb_layers):
     H = Dense(units=dim, bias_initializer=initial_bias)(highway_input)
     H = Activation('sigmoid')(H)
-    carry_gate = Lambda(lambda x: 1.0 - x, ouput_shape=(dim,))(H)
+    carry_gate = Lambda(lambda x: 1.0 - x, output_shape=(dim,))(H)
     transform_gate = Dense(units=dim)(highway_input)
     transform_gate = Activation(activation)(transform_gate)
     transformed = Multiply()([H, transform_gate])
@@ -54,6 +56,7 @@ def Highway_Net(highway_input, nb_layers, activation = 'relu', bias = -3):
     highway_output = Add()([transformed, carried])
 
   return highway_output
+
 
 def CBHG(input_data, K_CBHG, for_encoder = True):
   """
@@ -68,7 +71,7 @@ def CBHG(input_data, K_CBHG, for_encoder = True):
   # Batch Normalization
   conv1d_bank = BatchNormalization()(conv1d_bank)
   # Residual Connection
-  residual = Add()([input_data, conv1d_bank])
+  residual = Add()([conv1d_bank, input_data])
   # Highway Net
   highway_net = Highway_Net(residual, 4, activation='relu')
 
@@ -81,6 +84,7 @@ def CBHG(input_data, K_CBHG, for_encoder = True):
 
   return CBHG
 
+
 def Attention_RNN():
   """
   Attention RNN
@@ -88,6 +92,7 @@ def Attention_RNN():
   1-layer GRU with 256 units
   """
   return GRU(256)
+
 
 def Decoder_RNN(input_data):
   """
@@ -107,6 +112,7 @@ def Decoder_RNN(input_data):
   decoder_rnn = Add()([inp2, rnn2])
 
   return decoder_rnn
+
 
 def Attention_Context(encoder_output, attention_rnn_output):
   """
