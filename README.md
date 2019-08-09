@@ -10,15 +10,15 @@ This is the development of a Myanmar Text-to-Speech system with the famous End-t
 
 Text corpus contains about 19K lines of Myanmar text in Unicode.
 
-Speech corpus (mmSpeech as I called it) is created solely on my own with a recorder tool (as previously mentioned) and it currently contains ~3,000 audio samples and still growing.
+Speech corpus (mmSpeech as I call it) is created solely on my own with a recorder tool (as previously mentioned) and it currently contains over 3,000 recorded audio samples and still growing.
 
 ## Instructions
 
 ### Installing dependencies
 
-1.  install Python 3
-2.  install the latest version of [TensorFlow](https://www.tensorflow.org/install/)
-3.  install requirements
+1.  Install Python 3
+2.  Install the latest version of [TensorFlow](https://www.tensorflow.org/install/)
+3.  Install a number of modules
     ```
     pip install -r requirements.txt
     ```
