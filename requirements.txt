@@ -1,8 +1,9 @@
-pandas
+# TensorFlow should be installed beforehand
 numpy
 scikit-learn
-tensorflow
-keras
+pandas
 librosa
+falcon
+inflect
 tqdm
 matplotlib
