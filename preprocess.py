@@ -7,7 +7,7 @@ from functools import partial
 import numpy as np
 from tqdm import tqdm
 
-from constants.hparams import hparams
+import constants.hparams as hparams
 from signal_proc import audio
 
 
@@ -105,7 +105,7 @@ def preprocess(args):
   prepare_text_dataset(metadata, out_dir)
   # give feedback
   frames = sum([m[2] for m in metadata])
-  hours = frames * hparams.frame_shift_ms / (3600 * 1000)
+  hours = frames * hparams.FRAME_SHIFT / 3600
   print('Wrote %d utterances, %d frames (%.2f hours)' % (len(metadata), frames, hours))
   print('Max input length: %d' % max(len(m[3]) for m in metadata))
   print('Max output length %d' % max(m[2] for m in metadata))
