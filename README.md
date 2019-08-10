@@ -25,7 +25,7 @@ Speech corpus (mmSpeech as I call it) is created solely on my own with a recorde
 
 ### Preparing Text and Audio Dataset
 
-1.  First of all, both Text and Speech corpus should reside in `~/myanmar-tts`, although it is not a **must** and can easily be changed by a command line argument.
+1.  First of all, both Text and Speech corpus should reside in `~/Documents/myanmar-tts`, although it is not a **must** and can easily be changed by a command line argument.
     ```
     myanmar-tts
       | mmSpeech
@@ -37,4 +37,4 @@ Speech corpus (mmSpeech as I call it) is created solely on my own with a recorde
     ```
       python3 preprocess.py
     ```
-    After it is done, you should see the outputs in `~/myanmar-tts/training/`
+    After it is done, you should see the outputs in `~/Documents/myanmar-tts/training/`

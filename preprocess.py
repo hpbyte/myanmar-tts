@@ -8,12 +8,12 @@ import numpy as np
 from tqdm import tqdm
 
 from constants.hparams import hparams
-from signal import audio
+from signal_proc import audio
 
 
 def prepare_audio_dataset(in_dir, out_dir, nb_workers=1, tqdm=lambda x: x):
   """
-  Prepare both the input text and audio files from a given input path into a given output path
+  Preprocess the dataset of the audio files from a given input path into a given output path
 
   @type   in_dir      str
   @type   out_dir     str
@@ -44,6 +44,16 @@ def prepare_audio_dataset(in_dir, out_dir, nb_workers=1, tqdm=lambda x: x):
 
 
 def prepare_text_dataset(metadata, out_dir):
+  """
+  Preprocess the dataset of the texts from a given input path into a given output path.
+  This writes a file called train.txt as the input dataset
+
+  @type   metadata    list
+  @type   out_dir     str
+
+  @param  metadata    text data
+  @param  out_dir     output directory for the preprocessed texts
+  """
   with open(os.path.join(out_dir, 'train.txt'), 'w', encoding='utf-8') as f:
     for m in metadata:
       f.write('|'.join([str(x) for x in m]) + '\n')
@@ -103,8 +113,8 @@ def preprocess(args):
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--base_dir', default=os.path.expanduser('~/myanmar-tts'))
-  parser.add_argument('--input', default=os.path.abspath('~/myanmar-tts/mmSpeech'))
+  parser.add_argument('--base_dir', default=os.path.expanduser('~/Documents/myanmar-tts'))
+  parser.add_argument('--input', default='mmSpeech')
   parser.add_argument('--output', default='training')
   parser.add_argument('--nb_workers', type=int, default=cpu_count())
   args = parser.parse_args()
