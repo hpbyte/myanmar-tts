@@ -1,17 +1,18 @@
-import tensorflow as tf
+# Signal
+NUM_MELS = 80
+NUM_FREQ = 1025
+SAMPLE_RATE = 20000
+FRAME_LENGTH = 0.05
+FRAME_SHIFT = 0.0125
+PREEMPHASIS = 0.97
+MIN_LEVEL_DB = -100
+REF_LEVEL_DB = 20
 
-hparams = tf.contrib.training.HParams(
-  # Signal
-  num_mels=80,
-  num_freq=1025,
-  sample_rate=20000,
-  frame_length_ms=50,
-  frame_shift_ms=12.5,
-  preemphasis=0.97,
-  min_level_db=-100,
-  ref_level_db=20,
+# parameters
+N_FFT = (NUM_FREQ - 1) * 2
+HOP_LENGTH = int(FRAME_SHIFT * SAMPLE_RATE)
+WIN_LENGTH = int(FRAME_LENGTH * SAMPLE_RATE)
 
-  max_iters=200,
-  griffin_lim_iters=60,
-  power=1.5,
-)
+MAX_ITERS = 200
+GRIFFIN_LIM_ITERS = 60
+POWER = 1.5
