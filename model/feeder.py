@@ -8,7 +8,7 @@ import numpy as np
 import tensorflow as tf
 
 import constants.hparams as hparams
-from text import text_to_sequence
+from text.tokenizer import text_to_sequence
 from utils.logger import log
 
 batches_per_group = 32
