@@ -12,9 +12,9 @@ def prenet(inputs, is_training, scope=None):
 
   with tf.variable_scope(scope or 'prenet'):
     prenet = tf.keras.layers.Dense(256, activation='relu')(prenet)
-    prenet = tf.keras.layers.Dropout(drop_rate, training=is_training)(prenet)
+    prenet = tf.keras.layers.Dropout(drop_rate)(prenet, training=is_training)
     prenet = tf.keras.layers.Dense(128, activation='relu')(prenet)
-    prenet = tf.keras.layers.Dropout(drop_rate, training=is_training)(prenet)
+    prenet = tf.keras.layers.Dropout(drop_rate)(prenet, training=is_training)
 
   return prenet
 
@@ -23,7 +23,7 @@ def conv1d(inputs, kernel_size, filters, activation, is_training, scope):
   """ Conv1d with batch normalization """
   with tf.variable_scope(scope):
     conv1d = tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, activation=activation, padding='same')(inputs)
-    conv1d = tf.keras.layers.BatchNormalization(training=is_training)(conv1d)
+    conv1d = tf.keras.layers.BatchNormalization()(conv1d, training=is_training)
 
     return conv1d
 
@@ -114,7 +114,7 @@ def attention_decoder(inputs):
 class Decoder_Prenet(tf.nn.rnn_cell.RNNCell):
   """Runs RNN inputs through a prenet before sending them to the cell."""
   def __init__(self, cell, is_training, layer_sizes):
-    super(DecoderPrenetWrapper, self).__init__()
+    super(Decoder_Prenet, self).__init__()
     self._cell = cell
     self._is_training = is_training
     self._layer_sizes = layer_sizes

@@ -126,3 +126,15 @@ def Griffin_Lim_tf(S):
       y = inv_stft_tf(S_complex * angles)
 
     return tf.squeeze(y, 0)
+
+
+def find_endpoint(wav, threshold_db = -40, min_silence_sec = 0.8):
+  window_length = int(hparams.SAMPLE_RATE * min_silence_sec)
+  hop_length = int(window_length / 4)
+  threshold = db_to_amp(threshold_db)
+
+  for x in range(hop_length, len(wav) - window_length, hop_length):
+    if np.max(wav[x:(x + window_length)]) < threshold:
+      return x + hop_length
+
+  return len(wav)
