@@ -17,7 +17,7 @@ from utils import logger, plotter, ValueWindow
 
 
 def add_stats(model):
-  with tf.variable_scope('stats') as scope:
+  with tf.compat.v1.variable_scope('stats'):
     tf.summary.histogram('linear_outputs', model.linear_outputs)
     tf.summary.histogram('linear_targets', model.linear_targets)
     tf.summary.histogram('mel_outputs', model.mel_outputs)
@@ -45,12 +45,12 @@ def train(log_dir, args):
 
   # set up DataFeeder
   coordi = tf.train.Coordinator()
-  with tf.variable_scope('data_feeder'):
+  with tf.compat.v1.variable_scope('data_feeder'):
     feeder = DataFeeder(coordi, input_path)
 
   # set up Model
   global_step = tf.Variable(0, name='global_step', trainable=False)
-  with tf.variable_scope('model'):
+  with tf.compat.v1.variable_scope('model'):
     model = Tacotron()
     model.init(feeder.inputs, feeder.input_lengths, mel_targets=feeder.mel_targets, linear_targets=feeder.linear_targets)
     model.add_loss()
@@ -61,15 +61,15 @@ def train(log_dir, args):
   step = 0
   loss_window = ValueWindow(100)
   time_window = ValueWindow(100)
-  saver = tf.train.Saver(max_to_keep=5, keep_checkpoint_every_n_hours=2)
+  saver = tf.compat.v1.train.Saver(max_to_keep=5, keep_checkpoint_every_n_hours=2)
 
   # start training already!
-  with tf.Session() as sess:
+  with tf.compat.v1.Session() as sess:
     try:
       summary_writer = tf.summary.FileWriter(log_dir, sess.graph)
       
       # initialize parameters
-      sess.run(tf.global_variables_initializer())
+      sess.run(tf.compat.v1.global_variables_initializer())
 
       # if requested, restore from step
       if (args.restore_step):

@@ -115,7 +115,7 @@ def Griffin_Lim(S):
 
 
 def Griffin_Lim_tf(S):
-  with tf.variable_scope('griffinlim'):
+  with tf.compat.v1.variable_scope('griffinlim'):
     S = tf.expand_dims(S, 0)
     S_complex = tf.identity(tf.cast(S, dtype=tf.complex64))
     y = inv_stft_tf(S_complex)

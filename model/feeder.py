@@ -33,10 +33,10 @@ class DataFeeder(threading.Thread):
     # create placeholders for inputs and targets
     # didn't specify batch size bcuz of the need to feed different sized batches at eval time
     self._placeholders = [
-      tf.placeholder(tf.int32, [None, None], 'inputs'),
-      tf.placeholder(tf.int32, [None], 'input_lengths'),
-      tf.placeholder(tf.float32, [None, None, hparams.NUM_MELS], 'mel_targets'),
-      tf.placeholder(tf.float32, [None, None, hparams.NUM_FREQ], 'linear_targets')
+      tf.compat.v1.placeholder(tf.int32, [None, None], 'inputs'),
+      tf.compat.v1.placeholder(tf.int32, [None], 'input_lengths'),
+      tf.compat.v1.placeholder(tf.float32, [None, None, hparams.NUM_MELS], 'mel_targets'),
+      tf.compat.v1.placeholder(tf.float32, [None, None, hparams.NUM_FREQ], 'linear_targets')
     ]
 
     # create a queue for buffering data

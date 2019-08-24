@@ -30,7 +30,7 @@ class Tacotron():
                             spectrogram. Only needed for training.
     """
 
-    with tf.variable_scope('inference'):
+    with tf.compat.v1.variable_scope('inference'):
       is_training = linear_targets is not None
       batch_size = tf.shape(inputs)[0]
 
@@ -40,7 +40,7 @@ class Tacotron():
         helper = TacoTestHelper(batch_size, hparams.NUM_MELS, hparams.OUTPUTS_PER_STEP)
 
       """ Character Embeddings """
-      embedding_table = tf.get_variable('embedding', [len(characters), 256],
+      embedding_table = tf.compat.v1.get_variable('embedding', [len(characters), 256],
                           initializer=tf.truncated_normal_initializer(stddev=0.5))
 
       embedded_inputs = tf.nn.embedding_lookup(embedding_table, inputs)       # [N, T_in, embed_depth=256]
@@ -107,7 +107,7 @@ class Tacotron():
 
   def add_loss(self):
     """ Adding Loss to the model """
-    with tf.variable_scope('loss'):
+    with tf.compat.v1.variable_scope('loss'):
       self.mel_loss = tf.reduce_mean(tf.abs(self.mel_targets - self.mel_outputs))
       l1_loss = tf.abs(self.linear_targets - self.linear_outputs)
       
@@ -120,7 +120,7 @@ class Tacotron():
 
   def add_optimizer(self, global_step):
     """ Adding optimizer to the model """
-    with tf.variable_scope('optimizer'):
+    with tf.compat.v1.variable_scope('optimizer'):
       if (hparams.LEARNING_RATE_DECAY):
         self.learning_rate = _learning_rate_decay(hparams.INITIAL_LR, global_step)
       else:

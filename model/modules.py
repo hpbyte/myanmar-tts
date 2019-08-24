@@ -10,18 +10,18 @@ def prenet(inputs, is_training, scope=None):
   prenet = inputs
   drop_rate = 0.5 if is_training else 0.0
 
-  with tf.variable_scope(scope or 'prenet'):
+  with tf.compat.v1.variable_scope(scope or 'prenet'):
     prenet = tf.keras.layers.Dense(256, activation='relu')(prenet)
     prenet = tf.keras.layers.Dropout(drop_rate)(prenet, training=is_training)
     prenet = tf.keras.layers.Dense(128, activation='relu')(prenet)
     prenet = tf.keras.layers.Dropout(drop_rate)(prenet, training=is_training)
 
-  return prenet
+    return prenet
 
 
 def conv1d(inputs, kernel_size, filters, activation, is_training, scope):
   """ Conv1d with batch normalization """
-  with tf.variable_scope(scope):
+  with tf.compat.v1.variable_scope(scope):
     conv1d = tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, activation=activation, padding='same')(inputs)
     conv1d = tf.keras.layers.BatchNormalization()(conv1d, training=is_training)
 
@@ -33,18 +33,16 @@ def conv1d_bank(inputs, K, is_training):
 
   K-layers of Conv1D filters to model Unigrams, Bigrams and so on
   """
-  with tf.variable_scope('conv1d_bank'):
-    bank = tf.concat(
-      [conv1d(inputs, k, 128, tf.nn.relu, is_training, 'conv1d_%d' % k) for k in range(1, K+1)],
-      axis=-1
-    )
+  with tf.compat.v1.variable_scope('conv1d_bank'):
+    bank = tf.keras.layers.Concatenate(axis=-1)([conv1d(inputs, k, 128, tf.nn.relu, is_training, 'conv1d_%d' % k) for k in range(1, K+1)])
     return bank
 
 
 def highwaynet(highway_input, nb_layers, depth):
   """ HighwayNet """
+  highway_output = highway_input
   for i in range(nb_layers):
-    with tf.variable_scope('highway_%d' % (i+1)):
+    with tf.compat.v1.variable_scope('highway_%d' % (i+1)):
       H = tf.keras.layers.Dense(depth, activation='relu', name='H')(highway_input)
       T = tf.keras.layers.Dense(depth, activation='sigmoid', name='T', bias_initializer=tf.constant_initializer(-1.0))(highway_input)
 
@@ -58,7 +56,7 @@ def cbhg(inputs, is_training, scope, K, projections):
 
   a powerful module for extracting representations from sequences
   """
-  with tf.variable_scope(scope):
+  with tf.compat.v1.variable_scope(scope):
     # Conv1D bank 
     #   encoder :  K=16, conv-k-128-ReLU
     #   post    :  K=8,  conv-k-128-ReLU
@@ -81,7 +79,10 @@ def cbhg(inputs, is_training, scope, K, projections):
     highway_output = highwaynet(highway_input, 4, 128)
 
     # Bidirectional GRU 128 cells
-    outputs = tf.keras.layers.Bidirectional(tf.keras.layers.GRUCell(128), backward_layer=tf.keras.layers.GRUCell(128))(highway_output)
+    outputs = tf.keras.layers.Bidirectional(
+                tf.keras.layers.GRU(128, return_sequences=True),
+                backward_layer=tf.keras.layers.GRU(128, return_sequences=True, go_backwards=True)
+              )(highway_output)
 
     return outputs
 
@@ -111,7 +112,7 @@ def attention_decoder(inputs):
 
 # Other Modules
 
-class Decoder_Prenet(tf.nn.rnn_cell.RNNCell):
+class Decoder_Prenet(tf.compat.v1.nn.rnn_cell.RNNCell):
   """Runs RNN inputs through a prenet before sending them to the cell."""
   def __init__(self, cell, is_training, layer_sizes):
     super(Decoder_Prenet, self).__init__()
@@ -135,7 +136,7 @@ class Decoder_Prenet(tf.nn.rnn_cell.RNNCell):
     return self._cell.zero_state(batch_size, dtype)
 
 
-class ConcatOutputAndAttentionWrapper(tf.nn.rnn_cell.RNNCell):
+class ConcatOutputAndAttentionWrapper(tf.compat.v1.nn.rnn_cell.RNNCell):
   """Concatenates RNN cell output with the attention context vector.
 
   This is expected to wrap a cell wrapped with an AttentionWrapper constructed with

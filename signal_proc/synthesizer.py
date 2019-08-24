@@ -21,18 +21,18 @@ class Synthesizer():
     """
     print('Constructing Tacotron Model ...')
 
-    inputs = tf.placeholder(tf.int32, [1, None], 'inputs')
-    input_lengths = tf.placeholder(tf.int32, [1], 'input_lengths')
+    inputs = tf.compat.v1.placeholder(tf.int32, [1, None], 'inputs')
+    input_lengths = tf.compat.v1.placeholder(tf.int32, [1], 'input_lengths')
 
-    with tf.variable_scope('model'):
+    with tf.compat.v1.variable_scope('model'):
       self.model = Tacotron()
       self.model.init(inputs, input_lengths)
       self.wav_output = audio.spectrogram_to_wav_tf(self.model.linear_outputs[0])
 
     print('Loading checkpoint: %s' % checkpoint_path)
-    self.session = tf.Session()
-    self.session.run(tf.global_variables_initializer())
-    saver = tf.train.Saver()
+    self.session = tf.compat.v1.Session()
+    self.session.run(tf.compat.v1.global_variables_initializer())
+    saver = tf.compat.v1.train.Saver()
     saver.restore(self.session, checkpoint_path)
 
 
