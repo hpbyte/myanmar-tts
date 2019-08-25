@@ -7,7 +7,7 @@ import threading
 import numpy as np
 import tensorflow as tf
 
-import constants.hparams as hparams
+from constants.hparams import Hyperparams as hparams
 from text.tokenizer import text_to_sequence
 from utils.logger import log
 
@@ -27,7 +27,7 @@ class DataFeeder(threading.Thread):
     self._data_dir = os.path.dirname(metadata_filename)
     with open(metadata_filename, encoding='utf-8') as f:
       self._metadata = [line.strip().split('|') for line in f]
-      hours = sum((int(x[2]) for x in self._metadata)) * hparams.FRAME_SHIFT / 3600
+      hours = sum((int(x[2]) for x in self._metadata)) * hparams.frame_shift / 3600
       log('Loaded metadata for %d examples (%.2f hours)' % (len(self._metadata), hours))
 
     # create placeholders for inputs and targets
@@ -35,8 +35,8 @@ class DataFeeder(threading.Thread):
     self._placeholders = [
       tf.compat.v1.placeholder(tf.int32, [None, None], 'inputs'),
       tf.compat.v1.placeholder(tf.int32, [None], 'input_lengths'),
-      tf.compat.v1.placeholder(tf.float32, [None, None, hparams.NUM_MELS], 'mel_targets'),
-      tf.compat.v1.placeholder(tf.float32, [None, None, hparams.NUM_FREQ], 'linear_targets')
+      tf.compat.v1.placeholder(tf.float32, [None, None, hparams.num_mels], 'mel_targets'),
+      tf.compat.v1.placeholder(tf.float32, [None, None, hparams.num_freq], 'linear_targets')
     ]
 
     # create a queue for buffering data

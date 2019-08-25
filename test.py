@@ -3,7 +3,7 @@ import re
 import argparse
 
 from signal_proc.synthesizer import Synthesizer
-import constants.hparams as hparams
+from constants.hparams import Hyperparams as hparams
 
 
 sentences = [

@@ -12,7 +12,7 @@ from model.feeder import DataFeeder
 from model.tacotron import Tacotron
 from signal_proc import audio
 from text.tokenizer import sequence_to_text
-import constants.hparams as hparams
+from constants.hparams import Hyperparams as hparams
 from utils import logger, plotter, ValueWindow
 
 

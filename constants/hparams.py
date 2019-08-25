@@ -1,28 +1,36 @@
-# Signal
-NUM_MELS = 80
-NUM_FREQ = 1025
-SAMPLE_RATE = 20000
-FRAME_LENGTH = 0.05
-FRAME_SHIFT = 0.0125
-PREEMPHASIS = 0.97
-MIN_LEVEL_DB = -100
-REF_LEVEL_DB = 20
+class Hyperparams:
+  """ Hyper parameters """
+  # Signal
+  num_mels = 80
+  num_freq = 1025
+  sample_rate = 20000
+  frame_length = 0.05
+  frame_shift = 0.0125
+  preemphasis = 0.97
+  min_db = -100
+  ref_db = 20
 
-# parameters
-N_FFT = (NUM_FREQ - 1) * 2
-HOP_LENGTH = int(FRAME_SHIFT * SAMPLE_RATE)
-WIN_LENGTH = int(FRAME_LENGTH * SAMPLE_RATE)
+  # parameters
+  n_fft = (num_freq - 1) * 2
+  hop_length = int(frame_shift * sample_rate)
+  win_length = int(frame_length * sample_rate)
 
-MAX_ITERS = 200
-GRIFFIN_LIM_ITERS = 60
-POWER = 1.5
+  max_iters = 200
+  griffin_lim_iters = 60
+  power = 1.5
 
-# for training
-BATCH_SIZE = 32
-LEARNING_RATE_DECAY = True
-INITIAL_LR = 0.002
-ADAM_BETA_1 = 0.9
-ADAM_BETA_2 = 0.999
+  # for training
+  batch_size = 32
+  learning_rate_decay = True
+  initial_lr = 0.002
+  adam_beta_1 = 0.9
+  adam_beta_2 = 0.999
 
-# Model
-OUTPUTS_PER_STEP = 5
+  # Model
+  outputs_per_step = 5
+  embed_depth = 256
+  prenet_depths = [256, 128]
+  encoder_depth = 256
+  postnet_depth = 256
+  attention_depth = 256
+  decoder_depth = 256

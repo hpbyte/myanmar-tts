@@ -1,5 +1,7 @@
 import tensorflow as tf
 
+from constants.hparams import Hyperparams as hparams
+
 # Core Modules
 
 def prenet(inputs, is_training, scope=None):
@@ -11,21 +13,46 @@ def prenet(inputs, is_training, scope=None):
   drop_rate = 0.5 if is_training else 0.0
 
   with tf.compat.v1.variable_scope(scope or 'prenet'):
-    prenet = tf.keras.layers.Dense(256, activation='relu')(prenet)
+    prenet = tf.keras.layers.Dense(hparams.prenet_depths[0], activation='relu')(prenet)
     prenet = tf.keras.layers.Dropout(drop_rate)(prenet, training=is_training)
-    prenet = tf.keras.layers.Dense(128, activation='relu')(prenet)
+    prenet = tf.keras.layers.Dense(hparams.prenet_depths[1], activation='relu')(prenet)
     prenet = tf.keras.layers.Dropout(drop_rate)(prenet, training=is_training)
 
     return prenet
 
 
-def conv1d(inputs, kernel_size, filters, activation, is_training, scope):
+def batchnorm(inputs, is_training):
+  """ fused batchnormalization """
+  inputs_shape = inputs.get_shape()
+  inputs_rank = inputs_shape.ndims
+
+  if inputs_rank in [2, 3, 4]:
+    if inputs_rank == 2:
+      inputs = tf.expand_dims(inputs, axis=1)
+      inputs = tf.expand_dims(inputs, axis=2)
+    elif inputs_rank == 3:
+      inputs = tf.expand_dims(inputs, axis=1)
+
+    outputs = tf.keras.layers.BatchNormalization(fused=True)(inputs, training=is_training)
+
+    # restore original shape
+    if inputs_rank == 2:
+      outputs = tf.squeeze(outputs, axis=[1, 2])
+    elif inputs_rank == 3:
+      outputs = tf.squeeze(outputs, axis=1)
+  else:
+    outputs = tf.keras.layers.BatchNormalization()(inputs, training=is_training)
+
+  return outputs
+  
+
+def conv1d(inputs, filters, kernel_size, is_training, scope, activation=None):
   """ Conv1d with batch normalization """
   with tf.compat.v1.variable_scope(scope):
-    conv1d = tf.keras.layers.Conv1D(filters=filters, kernel_size=kernel_size, activation=activation, padding='same')(inputs)
-    conv1d = tf.keras.layers.BatchNormalization()(conv1d, training=is_training)
+    conv1d = tf.keras.layers.Conv1D(filters, kernel_size, activation=activation, padding='same')(inputs)
+    outputs = batchnorm(conv1d, is_training)
 
-    return conv1d
+    return outputs
 
 
 def conv1d_bank(inputs, K, is_training):
@@ -34,7 +61,7 @@ def conv1d_bank(inputs, K, is_training):
   K-layers of Conv1D filters to model Unigrams, Bigrams and so on
   """
   with tf.compat.v1.variable_scope('conv1d_bank'):
-    bank = tf.keras.layers.Concatenate(axis=-1)([conv1d(inputs, k, 128, tf.nn.relu, is_training, 'conv1d_%d' % k) for k in range(1, K+1)])
+    bank = tf.keras.layers.Concatenate(axis=-1)([conv1d(inputs, 128, k, is_training, 'conv1d_%d' % k, activation='relu') for k in range(1, K+1)])
     return bank
 
 
@@ -51,7 +78,7 @@ def highwaynet(highway_input, nb_layers, depth):
   return highway_output
 
 
-def cbhg(inputs, is_training, scope, K, projections):
+def cbhg(inputs, is_training, scope, K, projections, depth):
   """ CBHG module (Conv1D Bank, Highway Net, Bidirectional GRU)
 
   a powerful module for extracting representations from sequences
@@ -69,11 +96,17 @@ def cbhg(inputs, is_training, scope, K, projections):
     # Two projections layers
     #   encoder :  conv-3-128-ReLU → conv-3-128-Linear
     #   post    :  conv-3-256-ReLU → conv-3-80-Linear
-    proj1_output = conv1d(maxpool_output, 3, projections[0], tf.nn.relu, is_training, 'proj_1')
-    proj2_output = conv1d(proj1_output, 3, projections[1], None, is_training, 'proj_2')
+    proj1_output = conv1d(maxpool_output, projections[0], 3, is_training, 'proj_1', activation='relu')
+    proj2_output = conv1d(proj1_output, projections[1], 3, is_training, 'proj_2')
 
     # Residual connection
     highway_input = proj2_output + inputs
+
+    half_depth = depth // 2
+
+    # Handle dimensionality mismatch:
+    if highway_input.shape[2] != half_depth:
+      highway_input = tf.keras.layers.Dense(half_depth)(highway_input)
 
     # 4-layer HighwayNet
     highway_output = highwaynet(highway_input, 4, 128)
@@ -89,19 +122,18 @@ def cbhg(inputs, is_training, scope, K, projections):
 
 def encoder_cbhg(inputs, is_training):
   """ Encoder CBHG """
-  input_channels = inputs.get_shape()[2]
-  return cbhg(inputs, is_training, scope='encoder_cbhg', K=16, projections=[128, input_channels])
+  return cbhg(inputs, is_training, scope='encoder_cbhg', K=16, projections=[128, 128], depth=hparams.encoder_depth)
 
 
 def post_cbhg(inputs, input_dim, is_training):
   """ Post-processing net CBHG """
-  return cbhg(inputs, is_training, scope='post_cbhg', K=8, projections=[256, input_dim])
+  return cbhg(inputs, is_training, scope='post_cbhg', K=8, projections=[256, input_dim], depth=hparams.postnet_depth)
 
 
 def attention_decoder(inputs):
   """ Attention Decoder """
-  attention_mechanism = tf.contrib.seq2seq.BahdanauAttention(256, inputs)
-  decoder_cell = tf.keras.layers.GRUCell(256)
+  attention_mechanism = tf.contrib.seq2seq.BahdanauAttention(hparams.attention_depth, inputs)
+  decoder_cell = tf.nn.rnn_cell.GRUCell(hparams.attention_depth)
   attention_cell = tf.contrib.seq2seq.AttentionWrapper(
                                         decoder_cell, attention_mechanism, 
                                         alignment_history=True, output_attention=False

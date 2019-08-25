@@ -7,7 +7,7 @@ from librosa import effects
 from model.tacotron import Tacotron
 from signal_proc import audio
 from text.tokenizer import text_to_sequence
-import constants.hparams as hparams
+from constants.hparams import Hyperparams as hparams
 
 
 class Synthesizer():

@@ -4,7 +4,7 @@ import argparse
 import falcon
 
 from signal_proc.synthesizer import Synthesizer
-import constants.hparams
+from constants.hparams import Hyperparams as hparams
 
 
 html_body = '''<html><title>Demo</title>

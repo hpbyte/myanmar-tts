@@ -3,7 +3,7 @@ import tensorflow as tf
 from model.modules import (prenet, encoder_cbhg, post_cbhg, attention_decoder,
                           Decoder_Prenet, ConcatOutputAndAttentionWrapper)
 from model.helpers import (TacoTrainingHelper, TacoTestHelper)
-import constants.hparams as hparams
+from constants.hparams import Hyperparams as hparams
 from text.character_set import characters
 from utils.logger import log
 
@@ -35,12 +35,12 @@ class Tacotron():
       batch_size = tf.shape(inputs)[0]
 
       if (is_training):
-        helper = TacoTrainingHelper(inputs, mel_targets, hparams.NUM_MELS, hparams.OUTPUTS_PER_STEP)
+        helper = TacoTrainingHelper(inputs, mel_targets, hparams.num_mels, hparams.outputs_per_step)
       else:
-        helper = TacoTestHelper(batch_size, hparams.NUM_MELS, hparams.OUTPUTS_PER_STEP)
+        helper = TacoTestHelper(batch_size, hparams.num_mels, hparams.outputs_per_step)
 
       """ Character Embeddings """
-      embedding_table = tf.compat.v1.get_variable('embedding', [len(characters), 256],
+      embedding_table = tf.compat.v1.get_variable('embedding', [len(characters), hparams.embed_depth],
                           initializer=tf.truncated_normal_initializer(stddev=0.5))
 
       embedded_inputs = tf.nn.embedding_lookup(embedding_table, inputs)       # [N, T_in, embed_depth=256]
@@ -53,34 +53,34 @@ class Tacotron():
       attention_cell = attention_decoder(encoder_outputs)                     # [N, T_in, attention_depth=256]
 
       # apply prenet before concatanation in AttentionWrapper
-      attention_cell = Decoder_Prenet(attention_cell, is_training, [256, 128])
+      attention_cell = Decoder_Prenet(attention_cell, is_training, hparams.prenet_depths)
 
       # Concatenate attention context vector and RNN cell output into a 2*attention_depth=512D vector.
       concat_cell = ConcatOutputAndAttentionWrapper(attention_cell)           # [N, T_in, 2*attention_depth=512]
 
-      decoder_cell = tf.keras.layers.StackedRNNCells([
-        tf.contrib.rnn.OutputProjectionWrapper(concat_cell, 256),
-        tf.nn.rnn_cell.ResidualWrapper(tf.keras.layers.GRUCell(256)),
-        tf.nn.rnn_cell.ResidualWrapper(tf.keras.layers.GRUCell(256))
-      ])                                                                      # [N, T_in, decoder_depth=256]
+      decoder_cell = tf.nn.rnn_cell.MultiRNNCell([
+        tf.contrib.rnn.OutputProjectionWrapper(concat_cell, hparams.decoder_depth),
+        tf.nn.rnn_cell.ResidualWrapper(tf.nn.rnn_cell.GRUCell(hparams.decoder_depth)),
+        tf.nn.rnn_cell.ResidualWrapper(tf.nn.rnn_cell.GRUCell(hparams.decoder_depth))
+      ], state_is_tuple=True)                                                 # [N, T_in, decoder_depth=256]
 
       # project onto r mel_spectrograms (predict r outputs at each RNN step)
-      output_cell = tf.contrib.rnn.OutputProjectionWrapper(decoder_cell, hparams.NUM_MELS * hparams.OUTPUTS_PER_STEP)
-      decoder_init_state = output_cell.zero_state(batch_size=batch_size, dtype=tf.float32)
+      output_cell = tf.contrib.rnn.OutputProjectionWrapper(decoder_cell, hparams.num_mels * hparams.outputs_per_step)
+      decoder_init_state = output_cell.get_initial_state(batch_size=batch_size, dtype=tf.float32)
 
       """ Decoder 2 """
       (decoder_outputs, _), decoder_final_state, _ = tf.contrib.seq2seq.dynamic_decode(
                                                       tf.contrib.seq2seq.BasicDecoder(output_cell, helper, decoder_init_state),
-                                                      maximum_iterations=hparams.MAX_ITERS
+                                                      maximum_iterations=hparams.max_iters
                                                     )                         # [N, T_out/r, M*r]
 
       # reshape outputs to be one output per entry
-      mel_outputs = tf.reshape(decoder_outputs, [batch_size, -1, hparams.NUM_MELS]) # [N, T_out, M]
+      mel_outputs = tf.reshape(decoder_outputs, [batch_size, -1, hparams.num_mels]) # [N, T_out, M]
 
       # post-processing CBHG
-      post_outputs = post_cbhg(mel_outputs, hparams.NUM_MELS, is_training)    # [N, T_out, postnet_depth=256]
+      post_outputs = post_cbhg(mel_outputs, hparams.num_mels, is_training)    # [N, T_out, postnet_depth=256]
 
-      linear_outputs = tf.keras.layers.Dense(hparams.NUM_FREQ)(post_outputs)  # [N, T_out, F]
+      linear_outputs = tf.keras.layers.Dense(hparams.num_freq)(post_outputs)  # [N, T_out, F]
 
       # grab alignments from the final state
       alignments = tf.transpose(decoder_final_state[0].alignment_history.stack(), [1, 2, 0])
@@ -92,6 +92,7 @@ class Tacotron():
       self.alignments = alignments
       self.mel_targets = mel_targets
       self.linear_targets = linear_targets
+      log('----------------------------------------------------------------')
       log('Initialized Tacotron model with dimensions: ')
       log('  embedding:                 %d' % embedded_inputs.shape[-1])
       log('  prenet out:                %d' % prenet_outputs.shape[-1])
@@ -99,10 +100,11 @@ class Tacotron():
       log('  attention out:             %d' % attention_cell.output_size)
       log('  concat attn & out:         %d' % concat_cell.output_size)
       log('  decoder cell out:          %d' % decoder_cell.output_size)
-      log('  decoder out (%d frames):   %d' % (hparams.OUTPUTS_PER_STEP, decoder_outputs.shape[-1]))
+      log('  decoder out (%d frames):   %d' % (hparams.outputs_per_step, decoder_outputs.shape[-1]))
       log('  decoder out (1 frame):     %d' % mel_outputs.shape[-1])
       log('  postnet out:               %d' % post_outputs.shape[-1])
       log('  linear out:                %d' % linear_outputs.shape[-1])
+      log('----------------------------------------------------------------')
 
 
   def add_loss(self):
@@ -112,7 +114,7 @@ class Tacotron():
       l1_loss = tf.abs(self.linear_targets - self.linear_outputs)
       
       # prioritize loss for freqeuncies under 3000 Hz
-      n_priority_freq = int(3000 / (hparams.SAMPLE_RATE * 0.5) * hparams.NUM_FREQ)
+      n_priority_freq = int(3000 / (hparams.sample_rate * 0.5) * hparams.num_freq)
       
       self.linear_loss = 0.5 * tf.reduce_mean(l1_loss) + 0.5 * tf.reduce_mean(l1_loss[:,:,0:n_priority_freq])
       self.loss = self.mel_loss + self.linear_loss
@@ -121,12 +123,12 @@ class Tacotron():
   def add_optimizer(self, global_step):
     """ Adding optimizer to the model """
     with tf.compat.v1.variable_scope('optimizer'):
-      if (hparams.LEARNING_RATE_DECAY):
-        self.learning_rate = _learning_rate_decay(hparams.INITIAL_LR, global_step)
+      if (hparams.learning_rate_decay):
+        self.learning_rate = _learning_rate_decay(hparams.initial_lr, global_step)
       else:
-        self.learning_rate = tf.convert_to_tensor(hparams.INITIAL_LR)
+        self.learning_rate = tf.convert_to_tensor(hparams.initial_lr)
 
-      optimizer = tf.train.AdamOptimizer(self.learning_rate, hparams.ADAM_BETA_1, hparams.ADAM_BETA_2)
+      optimizer = tf.train.AdamOptimizer(self.learning_rate, hparams.adam_beta_1, hparams.adam_beta_2)
       gradients, variables = zip(*optimizer.compute_gradients(self.loss))
       
       self.gradients = gradients
