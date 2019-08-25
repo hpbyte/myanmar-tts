@@ -47,7 +47,7 @@ python3 train.py
 
 If you want to restore the step from a checkpoint
 ```
-python train.py --restore_step=Number
+python3 train.py --restore_step=Number
 ```
 
 
