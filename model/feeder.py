@@ -74,8 +74,8 @@ class DataFeeder(threading.Thread):
     start = time.time()
 
     # read a group of examples
-    nb_batches = self._hparams.BATCH_SIZE
-    r = self._hparams.OUTPUTS_PER_STEP
+    nb_batches = self._hparams.batch_size
+    r = self._hparams.outputs_per_step
     examples = [self.get_next_example() for i in range(nb_batches * batches_per_group)]
 
     # sort examples based on their length for efficiency
