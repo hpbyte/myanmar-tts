@@ -9,11 +9,10 @@ def prenet(inputs, is_training, scope=None):
 
   FC-256-ReLU -> Dropout(0.5) -> FC-128-ReLU -> Dropout(0.5)
   """
-  prenet = inputs
   drop_rate = 0.5 if is_training else 0.0
 
   with tf.compat.v1.variable_scope(scope or 'prenet'):
-    prenet = tf.keras.layers.Dense(hparams.prenet_depths[0], activation='relu')(prenet)
+    prenet = tf.keras.layers.Dense(hparams.prenet_depths[0], activation='relu')(inputs)
     prenet = tf.keras.layers.Dropout(drop_rate)(prenet, training=is_training)
     prenet = tf.keras.layers.Dense(hparams.prenet_depths[1], activation='relu')(prenet)
     prenet = tf.keras.layers.Dropout(drop_rate)(prenet, training=is_training)
