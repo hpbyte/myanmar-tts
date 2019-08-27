@@ -18,18 +18,18 @@ from utils import logger, plotter, ValueWindow
 
 def add_stats(model):
   with tf.compat.v1.variable_scope('stats'):
-    tf.summary.histogram('linear_outputs', model.linear_outputs)
-    tf.summary.histogram('linear_targets', model.linear_targets)
-    tf.summary.histogram('mel_outputs', model.mel_outputs)
-    tf.summary.histogram('mel_targets', model.mel_targets)
-    tf.summary.scalar('loss_mel', model.mel_loss)
-    tf.summary.scalar('loss_linear', model.linear_loss)
-    tf.summary.scalar('learning_rate', model.learning_rate)
-    tf.summary.scalar('loss', model.loss)
+    tf.compat.v1.summary.histogram('linear_outputs', model.linear_outputs)
+    tf.compat.v1.summary.histogram('linear_targets', model.linear_targets)
+    tf.compat.v1.summary.histogram('mel_outputs', model.mel_outputs)
+    tf.compat.v1.summary.histogram('mel_targets', model.mel_targets)
+    tf.compat.v1.summary.scalar('loss_mel', model.mel_loss)
+    tf.compat.v1.summary.scalar('loss_linear', model.linear_loss)
+    tf.compat.v1.summary.scalar('learning_rate', model.learning_rate)
+    tf.compat.v1.summary.scalar('loss', model.loss)
     gradient_norms = [tf.norm(grad) for grad in model.gradients]
-    tf.summary.histogram('gradient_norm', gradient_norms)
-    tf.summary.scalar('max_gradient_norm', tf.reduce_max(gradient_norms))
-    return tf.summary.merge_all()
+    tf.compat.v1.summary.histogram('gradient_norm', gradient_norms)
+    tf.compat.v1.summary.scalar('max_gradient_norm', tf.reduce_max(gradient_norms))
+    return tf.compat.v1.summary.merge_all()
 
 
 def time_string():
@@ -135,14 +135,14 @@ def train(log_dir, args):
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--base_dir', default=os.path.expanduser('~/Documents/tacotron'))
+  parser.add_argument('--base_dir', default=os.path.expanduser('~/Documents/myanmar-tts'))
   parser.add_argument('--input', default='training/train.txt')
   parser.add_argument('--restore_step', type=int, help='Global step to restore from checkpoint.')
   parser.add_argument('--summary_interval', type=int, default=100, help='Steps between running summary ops.')
   parser.add_argument('--checkpoint_interval', type=int, default=1000, help='Steps between writing checkpoints.')
   args = parser.parse_args()
 
-  log_dir = os.path.join(args.base_dir, args.input)
+  log_dir = os.path.join(args.base_dir, 'logs')
   os.makedirs(log_dir, exist_ok=True)
   logger.init(os.path.join(log_dir, 'train.log'))
 

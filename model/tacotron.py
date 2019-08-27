@@ -72,13 +72,13 @@ class Tacotron():
       else:
         self.learning_rate = tf.convert_to_tensor(hparams.initial_lr)
 
-      optimizer = tf.train.AdamOptimizer(self.learning_rate, hparams.adam_beta_1, hparams.adam_beta_2)
+      optimizer = tf.compat.v1.train.AdamOptimizer(self.learning_rate, hparams.adam_beta_1, hparams.adam_beta_2)
       gradients, variables = zip(*optimizer.compute_gradients(self.loss))
       
       self.gradients = gradients
       clipped_gradients, _ = tf.clip_by_global_norm(gradients, 1.0)
 
-      with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
+      with tf.control_dependencies(tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.UPDATE_OPS)):
         self.optimize = optimizer.apply_gradients(zip(clipped_gradients, variables),
           global_step=global_step)
 
@@ -93,4 +93,4 @@ def _learning_rate_decay(initial_lr, global_step):
   warmup_step = 4000.0
   step = tf.cast(global_step + 1, dtype=tf.float32)
 
-  return initial_lr * warmup_step**0.5 * tf.minimum(step * warmup_step**-1.5 * step**-0.5)
+  return initial_lr * warmup_step**0.5 * tf.minimum(step * warmup_step**-1.5, step**-0.5)
