@@ -49,7 +49,7 @@ def conv1d(inputs, filters, kernel_size, is_training, scope, activation=None):
   """ Conv1d with batch normalization """
   with tf.compat.v1.variable_scope(scope):
     conv1d = tf.keras.layers.Conv1D(filters, kernel_size, activation=activation, padding='same')(inputs)
-    outputs = batchnorm(conv1d, is_training)
+    outputs = tf.keras.layers.BatchNormalization()(conv1d, training=is_training)
 
     return outputs
 
