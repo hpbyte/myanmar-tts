@@ -1,8 +1,6 @@
 # Myanmar End-to-End Text-to-Speech
 
-This is the development of a Myanmar Text-to-Speech system with the famous End-to-End Speech Synthesis Model, Tacotron. This is a part of a thesis research that I've been doing and the implementation of the Tacotron model is **heavily** influenced by the following implementation:
-
-* https://github.com/keithito/tacotron
+This is the development of a Myanmar Text-to-Speech system with the famous End-to-End Speech Synthesis Model, Tacotron. This is a part of a thesis for B.E. Degree that I've been assigned at Yangon Technoglical University.
 
 ## Corpus
 
@@ -68,3 +66,9 @@ python3 app.py --checkpoint /path/to/checkpoint
 This will create a simple web app listening at port 9000 unless you specify.
 Open up your browser and go to `http://localhost:9000`, you should see a simple interface with a text input to get the text from the user.
 
+
+### References
+
+The implementation of the Tacotron Model is heavily influenced by the following implementation:
+
+* https://github.com/keithito/tacotron
