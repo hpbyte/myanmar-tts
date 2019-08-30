@@ -67,9 +67,10 @@ class UIResource:
 
 class SynthesisResource:
   def on_get(self, req, res):
-    if not req.params.get('text'):
+    inputTxt = req.params.get('text')
+    if not inputTxt:
       raise falcon.HTTPBadRequest()
-    res.data = synthesizer.synthesize(req.params.get('text'))
+    res.data = synthesizer.synthesize(inputTxt)
     res.content_type = 'audio/wav'
 
 

@@ -49,7 +49,7 @@ class Synthesizer():
     seq = text_to_sequence(text)
 
     feed_dict = {
-      self.model.inputs: [np.asarray(seq, dtype=tf.int32)],
+      self.model.inputs: [np.asarray(seq, dtype=np.int32)],
       self.model.input_lengths: np.asarray([len(seq)], dtype=np.int32)
     }
 
