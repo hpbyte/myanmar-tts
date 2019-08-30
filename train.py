@@ -75,7 +75,7 @@ def train(log_dir, args):
       if (args.restore_step):
         restore_path = '%s-%d' % (checkpoint_path, args.restore_step)
         saver.restore(sess, restore_path)
-        logger.log('Resuming from checkpoint: %s at commit: %s' % restore_path)
+        logger.log('Resuming from checkpoint: %s' % restore_path)
       else:
         logger.log('Starting a new training!')
 
@@ -89,8 +89,7 @@ def train(log_dir, args):
         time_window.append(time.time() - start_time)
         loss_window.append(loss)
 
-        msg = 'Step %-7d [%.03f sec/step, loss=%.05f, avg_loss=%.05f]' % (
-                  step, time_window.average, loss, loss_window.average)
+        msg = 'Step %-7d [%.03f sec/step, loss=%.05f, avg_loss=%.05f]' % (step, time_window.average, loss, loss_window.average)
 
         logger.log(msg)
 

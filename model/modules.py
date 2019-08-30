@@ -69,7 +69,7 @@ def highwaynet(highway_input, nb_layers, depth):
   highway_output = highway_input
   for i in range(nb_layers):
     with tf.compat.v1.variable_scope('highway_%d' % (i+1)):
-      H = tf.keras.layers.Dense(depth, activation='relu', name='H')(highway_input)
+      H = tf.keras.layers.Dense(depth, activation='relu', name='H')(highway_output)
       T = tf.keras.layers.Dense(depth, activation='sigmoid', name='T', bias_initializer=tf.constant_initializer(-1.0))(highway_input)
 
       highway_output = H * T + highway_input * (1.0 - T)

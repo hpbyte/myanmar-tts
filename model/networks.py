@@ -79,7 +79,7 @@ def decoder(inputs, encoder_outputs, is_training, batch_size, mel_targets):
 
   # project onto r mel_spectrograms (predict r outputs at each RNN step)
   output_cell = tf.contrib.rnn.OutputProjectionWrapper(decoder_cell, hparams.num_mels * hparams.outputs_per_step)
-  decoder_init_state = output_cell.get_initial_state(batch_size=batch_size, dtype=tf.float32)
+  decoder_init_state = output_cell.zero_state(batch_size=batch_size, dtype=tf.float32)
 
   
   """ Decoder 2 """
