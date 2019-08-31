@@ -113,7 +113,7 @@ def preprocess(args):
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--base_dir', default=os.path.expanduser('~/Documents/myanmar-tts'))
+  parser.add_argument('--base_dir', default=os.path.expanduser('~/mm-tts'))
   parser.add_argument('--input', default='mmSpeech')
   parser.add_argument('--output', default='training')
   parser.add_argument('--nb_workers', type=int, default=cpu_count())

@@ -22,7 +22,7 @@ Speech corpus (mmSpeech as I call it) is created solely on my own with a recorde
 
 ### Preparing Text and Audio Dataset
 
-1.  First of all, the corpus should reside in `~/Documents/myanmar-tts`, although it is not a **must** and can easily be changed by a command line argument.
+1.  First of all, the corpus should reside in `~/mm-tts`, although it is not a **must** and can easily be changed by a command line argument.
     ```
     myanmar-tts
       | mmSpeech
@@ -34,7 +34,7 @@ Speech corpus (mmSpeech as I call it) is created solely on my own with a recorde
     ```
       python3 preprocess.py
     ```
-    After it is done, you should see the outputs in `~/Documents/myanmar-tts/training/`
+    After it is done, you should see the outputs in `~/mm-tts/training/`
 
 
 ### Training
@@ -63,8 +63,8 @@ There is a simple app implemented to try out the trained models for their perfor
 ```
 python3 app.py --checkpoint /path/to/checkpoint
 ```
-This will create a simple web app listening at port 9000 unless you specify.
-Open up your browser and go to `http://localhost:9000`, you should see a simple interface with a text input to get the text from the user.
+This will create a simple web app listening at port 4000 unless you specify.
+Open up your browser and go to `http://localhost:4000`, you should see a simple interface with a text input to get the text from the user.
 
 
 ### References

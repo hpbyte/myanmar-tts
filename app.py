@@ -85,7 +85,7 @@ if __name__ == '__main__':
   
   parser = argparse.ArgumentParser()
   parser.add_argument('--checkpoint', required=True, help='Full path to model checkpoint')
-  parser.add_argument('--port', type=int, default=9000)
+  parser.add_argument('--port', type=int, default=4000)
   args = parser.parse_args()
   
   synthesizer.init(args.checkpoint)
