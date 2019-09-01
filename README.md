@@ -1,12 +1,12 @@
 # Myanmar End-to-End Text-to-Speech
 
-This is the development of a Myanmar Text-to-Speech system with the famous End-to-End Speech Synthesis Model, Tacotron. This is a part of a thesis for B.E. Degree that I've been assigned at Yangon Technoglical University.
+This is the development of a Myanmar Text-to-Speech system with the famous End-to-End Speech Synthesis Model, Tacotron. It is a part of a thesis for B.E. Degree that I've been assigned at Yangon Technological University.
 
 ## Corpus
 
 **[Base Technology, Expa.Ai (Myanmar)](https://expa.ai)** kindly provided Myanmar text corpus and their amazing tool for creating speech corpus.
 
-Speech corpus (mmSpeech as I call it) is created solely on my own with a recorder tool (as previously mentioned) and it currently contains over 4,000 recorded `<text, audio>` samples.
+Speech corpus (mmSpeech as I call it) is created solely on my own with a recorder tool (as previously mentioned) and it currently contains over 5,000 recorded `<text, audio>` pairs.
 
 ## Instructions
 
