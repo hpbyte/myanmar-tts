@@ -24,7 +24,7 @@ Speech corpus (mmSpeech as I call it) is created solely on my own with a recorde
 
 1.  First of all, the corpus should reside in `~/mm-tts`, although it is not a **must** and can easily be changed by a command line argument.
     ```
-    myanmar-tts
+    mm-tts
       | mmSpeech
         | metadata.csv
         | wavs

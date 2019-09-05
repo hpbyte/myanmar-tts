@@ -136,12 +136,13 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--base_dir', default=os.path.expanduser('~/mm-tts'))
   parser.add_argument('--input', default='training/train.txt')
+  parser.add_argument('--log_dir', default=os.path.expanduser('~/mm-tts'))
   parser.add_argument('--restore_step', type=int, help='Global step to restore from checkpoint.')
   parser.add_argument('--summary_interval', type=int, default=100, help='Steps between running summary ops.')
   parser.add_argument('--checkpoint_interval', type=int, default=1000, help='Steps between writing checkpoints.')
   args = parser.parse_args()
 
-  log_dir = os.path.join(args.base_dir, 'logs-mmspeech')
+  log_dir = os.path.join(args.log_dir, 'logs-mmspeech')
   os.makedirs(log_dir, exist_ok=True)
   logger.init(os.path.join(log_dir, 'train.log'))
 
