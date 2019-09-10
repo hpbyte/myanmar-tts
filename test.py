@@ -17,8 +17,8 @@ sentences = [
 ]
 
 
-def get_output_base_path(checkpoint_path):
-  base_dir = os.path.dirname(checkpoint_path)
+def get_output_base_path(checkpoint_path, out_dir):
+  base_dir = os.path.dirname(out_dir)
   m = re.compile(r'.*?\.ckpt\-([0-9]+)').match(checkpoint_path)
   name = 'eval-%d' % int(m.group(1)) if m else 'eval'
   return os.path.join(base_dir, name)
@@ -27,7 +27,7 @@ def get_output_base_path(checkpoint_path):
 def test(args):
   synthesizer = Synthesizer()
   synthesizer.init(args.checkpoint)
-  base_path = get_output_base_path(args.checkpoint)
+  base_path = get_output_base_path(args.checkpoint, args.out_dir)
 
   for i, text in enumerate(sentences):
     path = '%s-%d.wav' % (base_path, i)
@@ -39,6 +39,7 @@ def test(args):
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--checkpoint', required=True, help='Path to model checkpoint')
+  parser.add_argument('--out_dir', default=os.path.expanduser('~/mm-tts'))
   args = parser.parse_args()
 
   test(args)
