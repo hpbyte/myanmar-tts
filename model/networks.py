@@ -1,34 +1,43 @@
 import tensorflow as tf
+from tensorflow.contrib.rnn import GRUCell, MultiRNNCell, OutputProjectionWrapper, ResidualWrapper
+from tensorflow.contrib.seq2seq import BasicDecoder, BahdanauAttention, AttentionWrapper
 
-from model.modules import (prenet, encoder_cbhg, post_cbhg, attention_decoder,
-                          Decoder_Prenet, ConcatOutputAndAttentionWrapper)
+from model.modules import (prenet, encoder_cbhg, post_cbhg,
+                          DecoderPrenetWrapper, ConcatOutputAndAttentionWrapper)
 from model.helpers import (TacoTrainingHelper, TacoTestHelper)
 from constants.hparams import Hyperparams as hparams
 from text.character_set import characters
 from utils.logger import log
 
 
-def encoder(inputs, is_training):
+def encoder(inputs, input_lengths, is_training):
   """ Encoder 
   
   Embeddings -> Prenet -> Encoder CBHG
 
   @param    inputs        int32 Tensor with shape [N, T_in] where N is batch size, T_in is number of
                           steps in the input time series, and values are character IDs
+  @param    input_lengths lengths of the inputs
   @param    is_training   flag for training or eval
 
   @returns                outputs from the encoder
   """
 
   # Character Embeddings
-  embedding_table = tf.compat.v1.get_variable('embedding', [len(characters), hparams.embed_depth],
-                      initializer=tf.truncated_normal_initializer(stddev=0.5))
+  embedding_table = tf.get_variable(
+                      'embedding',
+                      [len(characters), hparams.embed_depth],
+                      dtype=tf.float32,
+                      initializer=tf.truncated_normal_initializer(stddev=0.5)
+                    )
 
-  embedded_inputs = tf.nn.embedding_lookup(embedding_table, inputs)       # [N, T_in, embed_depth=256]
+  embedded_inputs = tf.nn.embedding_lookup(embedding_table, inputs)               # [N, T_in, embed_depth=256]
 
-  prenet_outputs = prenet(embedded_inputs, is_training)                   # [N, T_in, prenet_depth=128]
+  # Encoder
+  prenet_outputs = prenet(embedded_inputs, is_training, hparams.prenet_depths)    # [N, T_in, prenet_depths[-1]=128]
   
-  encoder_outputs = encoder_cbhg(prenet_outputs, is_training)             # [N, T_in, prenet_depth=256]
+  encoder_outputs = encoder_cbhg(prenet_outputs, input_lengths, is_training, hparams.encoder_depth)
+                                                                                  # [N, T_in, encoder_depth=256]
 
   log('Encoder Network ...')
   log('  embedding:                 %d' % embedded_inputs.shape[-1])
@@ -62,42 +71,47 @@ def decoder(inputs, encoder_outputs, is_training, batch_size, mel_targets):
   else:
     helper = TacoTestHelper(batch_size, hparams.num_mels, hparams.outputs_per_step)
 
-  """ Decoder 1 """
-  attention_cell = attention_decoder(encoder_outputs)                     # [N, T_in, attention_depth=256]
-
-  # apply prenet before concatanation in AttentionWrapper
-  attention_cell = Decoder_Prenet(attention_cell, is_training, hparams.prenet_depths)
+  # Attention
+  attention_cell = AttentionWrapper(
+                    GRUCell(hparams.attention_depth),
+                    BahdanauAttention(hparams.attention_depth, encoder_outputs),
+                    alignment_history=True,
+                    output_attention=False
+                  )                                                           # [N, T_in, attention_depth=256]
+  
+  # Apply prenet before concatenation in AttentionWrapper.
+  attention_cell = DecoderPrenetWrapper(attention_cell, is_training, hparams.prenet_depths)
 
   # Concatenate attention context vector and RNN cell output into a 2*attention_depth=512D vector.
-  concat_cell = ConcatOutputAndAttentionWrapper(attention_cell)           # [N, T_in, 2*attention_depth=512]
+  concat_cell = ConcatOutputAndAttentionWrapper(attention_cell)               # [N, T_in, 2*attention_depth=512]
 
-  decoder_cell = tf.nn.rnn_cell.MultiRNNCell([
-    tf.contrib.rnn.OutputProjectionWrapper(concat_cell, hparams.decoder_depth),
-    tf.nn.rnn_cell.ResidualWrapper(tf.nn.rnn_cell.GRUCell(hparams.decoder_depth)),
-    tf.nn.rnn_cell.ResidualWrapper(tf.nn.rnn_cell.GRUCell(hparams.decoder_depth))
-  ], state_is_tuple=True)                                                 # [N, T_in, decoder_depth=256]
+  # Decoder (layers specified bottom to top):
+  decoder_cell = MultiRNNCell([
+                  OutputProjectionWrapper(concat_cell, hparams.decoder_depth),
+                  ResidualWrapper(GRUCell(hparams.decoder_depth)),
+                  ResidualWrapper(GRUCell(hparams.decoder_depth))
+                ], state_is_tuple=True)                                       # [N, T_in, decoder_depth=256]
 
-  # project onto r mel_spectrograms (predict r outputs at each RNN step)
-  output_cell = tf.contrib.rnn.OutputProjectionWrapper(decoder_cell, hparams.num_mels * hparams.outputs_per_step)
+  # Project onto r mel spectrograms (predict r outputs at each RNN step):
+  output_cell = OutputProjectionWrapper(decoder_cell, hparams.num_mels * hparams.outputs_per_step)
+
   decoder_init_state = output_cell.zero_state(batch_size=batch_size, dtype=tf.float32)
 
-  
-  """ Decoder 2 """
-  (decoder_outputs, _), decoder_final_state, _ = tf.contrib.seq2seq.dynamic_decode(
-                                                  tf.contrib.seq2seq.BasicDecoder(output_cell, helper, decoder_init_state),
+  (decoder_outputs, _), final_decoder_state, _ = tf.contrib.seq2seq.dynamic_decode(
+                                                  BasicDecoder(output_cell, helper, decoder_init_state),
                                                   maximum_iterations=hparams.max_iters
-                                                )                         # [N, T_out/r, M*r]
+                                                )                             # [N, T_out/r, M*r]
 
-  # reshape outputs to be one output per entry
-  mel_outputs = tf.reshape(decoder_outputs, [batch_size, -1, hparams.num_mels]) # [N, T_out, M]
+  # Reshape outputs to be one output per entry
+  mel_outputs = tf.reshape(decoder_outputs, [batch_size, -1, hparams.num_mels])   # [N, T_out, M]
 
-  # post-processing CBHG
-  post_outputs = post_cbhg(mel_outputs, hparams.num_mels, is_training)    # [N, T_out, postnet_depth=256]
+  # Add post-processing CBHG:
+  post_outputs = post_cbhg(mel_outputs, hparams.num_mels, is_training,            # [N, T_out, postnet_depth=256]
+                            hparams.postnet_depth)
+  linear_outputs = tf.layers.dense(post_outputs, hparams.num_freq)                # [N, T_out, F]
 
-  linear_outputs = tf.keras.layers.Dense(hparams.num_freq)(post_outputs)  # [N, T_out, F]
-
-  # grab alignments from the final state
-  alignments = tf.transpose(decoder_final_state[0].alignment_history.stack(), [1, 2, 0])
+  # Grab alignments from the final decoder state:
+  alignments = tf.transpose(final_decoder_state[0].alignment_history.stack(), [1, 2, 0])
 
   log('Decoder Network ...')
   log('  attention out:             %d' % attention_cell.output_size)

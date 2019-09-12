@@ -18,7 +18,7 @@ sentences = [
 
 
 def get_output_base_path(checkpoint_path, out_dir):
-  base_dir = os.path.dirname(out_dir)
+  base_dir = os.path.abspath(out_dir)
   m = re.compile(r'.*?\.ckpt\-([0-9]+)').match(checkpoint_path)
   name = 'eval-%d' % int(m.group(1)) if m else 'eval'
   return os.path.join(base_dir, name)
