@@ -1,9 +1,7 @@
 # TensorFlow should be installed beforehand
 numpy
 scikit-learn
-pandas
 librosa
 falcon
-inflect
 tqdm
 matplotlib
