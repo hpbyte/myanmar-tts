@@ -56,7 +56,7 @@ html_body = '''<!DOCTYPE html>
             </div>
           </div>
           <div class="card-action">
-            <button id="button" name="synthesize" class="waves-effect btn waves-light">Synthesize</button>
+            <button id="button" name="synthesize" class="waves-effect btn waves-light">Speak</button>
           </div>
         </form>
       </div>

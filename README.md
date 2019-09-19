@@ -66,11 +66,17 @@ python3 app.py --checkpoint /path/to/checkpoint
 This will create a simple web app listening at port 4000 unless you specify.
 Open up your browser and go to `http://localhost:4000`, you should see a simple interface with a text input to get the text from the user.
 
-You can download the trained model [here](https://drive.google.com/open?id=1P3JQYjGNoPbNykOg4-45LPUsZGuWkAd7)
 
-```
-python3 app.py --checkpoint /path/to/checkpoint/model.ckpt.150000
-```
+### Pretrained Model
+
+* [mmSpeech 150K Steps](https://drive.google.com/open?id=1P3JQYjGNoPbNykOg4-45LPUsZGuWkAd7)
+
+
+### Generated Audio Samples
+
+Generated Samples are available on SoundCloud
+
+* [mmSpeech 150K Steps](https://soundcloud.com/htoo-pyae-466960846/sets/mmspeech-outputs)
 
 
 ### Notes
@@ -79,13 +85,17 @@ python3 app.py --checkpoint /path/to/checkpoint/model.ckpt.150000
 * On average, each step tooks about 1.6 seconds and at peak, each step took about 1.2 and sometimes 1.1 seconds.
 * For my thesis, I have trained this model for 150,000 steps (took me about a week).
 
+
+### Loss Curve
+
 Below is the produced loss curves from training mmSpeech for 150,000 Steps.
 
 ![Loss](https://user-images.githubusercontent.com/34838719/65132116-7353e080-da26-11e9-9299-a08883811f47.png)
 
-![Linear Loss](https://user-images.githubusercontent.com/34838719/65132950-d42fe880-da27-11e9-8bc1-1ef7ba95cae3.png)
 
-![Mel Loss](https://user-images.githubusercontent.com/34838719/65132986-e578f500-da27-11e9-9214-a5ead8c0bdfc.png)
+### Alignment Plot
+
+![Alignment Plot](https://user-images.githubusercontent.com/34838719/65257737-afbb3580-db27-11e9-9046-e9a9931c55d3.gif)
 
 
 ### References
