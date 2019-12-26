@@ -2,6 +2,12 @@
 
 This is the development of a Myanmar Text-to-Speech system with the famous End-to-End Speech Synthesis Model, Tacotron. It is a part of a thesis for B.E. Degree that I've been assigned at Yangon Technological University.
 
+## License
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-Share Alike 4.0 International (CC BY-NC-SA 4.0) License. View detailed info of the [license](http://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+ဤ myanmar-tts ကို educational purpose များအတွက် လွတ်လပ်စွာ အသုံးပြုနိုင်သော်လည်း commercial use case များအတွက် အသုံးပြုခွင့် ပေးမထားပါ။
+
 ## Corpus
 
 **[Base Technology, Expa.Ai (Myanmar)](https://expa.ai)** kindly provided Myanmar text corpus and their amazing tool for creating speech corpus.
