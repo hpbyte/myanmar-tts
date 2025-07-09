@@ -1,6 +1,6 @@
 # Myanmar End-to-End Text-to-Speech
 
-This is the development of a Myanmar Text-to-Speech system with the famous End-to-End Speech Synthesis Model, Tacotron. It is a part of a thesis for B.E. Degree that I've been assigned at Yangon Technological University. My supervisor was **Dr. Yuzana Win** and she guided me throughout this development.
+This is the development of a Myanmar Text-to-Speech system with the famous End-to-End Speech Synthesis Model, Tacotron. It is a part of a thesis for B.E. Degree that I've been assigned at Yangon Technological University.
 
 ## License
 
